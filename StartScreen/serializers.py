@@ -1,20 +1,30 @@
 from rest_framework import serializers
-from .models import Genero, Socio
+from .models import Genero, Pelicula
 
-class PlanSerializer(serializers.ModelSerializer):
-    total_socios = serializers.SerializerMethodField(read_only=True)
 
-    class Meta:
-        model  = Plan
-        fields = ["id", "nombre", "precio", "activo", "total_socios"]
-
-    def get_total_socios(self, obj):
-        return obj.socios.filter(activo=True).count()
-
-class SocioSerializer(serializers.ModelSerializer):
-    plan_nombre = serializers.CharField(source="plan.nombre", read_only=True)
+class GeneroSerializer(serializers.ModelSerializer):
+    total_peliculas = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
-        model  = Socio
-        fields = ["id", "plan", "plan_nombre", "nombre", "cedula",
-                  "dias_atraso", "activo", "creado_en"]
+        model = Genero
+        fields = ["id", "nombre", "total_peliculas"]
+
+    def get_total_peliculas(self, obj):
+        return obj.peliculas.filter(en_cartelera=True).count()
+
+
+class PeliculaSerializer(serializers.ModelSerializer):
+    genero_nombre = serializers.CharField(source="genero.nombre", read_only=True)
+
+    class Meta:
+        model = Pelicula
+        fields = [
+            "id",
+            "titulo",
+            "codigo",
+            "duracion_minutos",
+            "precio_entrada",
+            "en_cartelera",
+            "genero",
+            "genero_nombre",
+        ]
