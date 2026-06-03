@@ -8,4 +8,6 @@ router.register(r"peliculas", views.PeliculaViewSet)
 
 urlpatterns = [
     path("", include(router.urls)),
+    path("cine/entradas/", views.calcular_entradas, name="calcular-entradas"),
+    path("cine/sala/", views.programar_sala, name="programar-sala"),
 ]
