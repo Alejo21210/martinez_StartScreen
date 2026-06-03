@@ -1,225 +1,268 @@
 {
   "info": {
+    "_postman_id": "b2d2c3f0-aaaa-bbbb-cccc-123456789000",
     "name": "Cine StartScreen",
-    "description": "Colección para probar los 3 ejercicios del sistema de gestión Cine StartScreen",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
+  "variable": [
+    { "key": "baseUrl", "value": "http://127.0.0.1:8000" },
+    { "key": "accessToken", "value": "" },
+    { "key": "refreshToken", "value": "" },
+    { "key": "generoId", "value": "" },
+    { "key": "peliculaId", "value": "" }
+  ],
   "item": [
     {
-      "name": "Ejercicio 1 - Géneros y Películas",
+      "name": "Auth",
       "item": [
         {
-          "name": "Crear Género",
+          "name": "Register (Public) - POST /api/auth/register/",
           "request": {
             "method": "POST",
-            "url": {
-              "raw": "{{base_url}}/api/generos/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "generos",
-                ""
-              ]
-            },
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              }
-            ],
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/api/auth/register/", "host": ["{{baseUrl}}"], "path": ["api", "auth", "register", ""] },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"nombre\": \"Terror\"\n}"
+              "raw": "{\n  \"username\": \"user1\",\n  \"email\": \"user1@mail.com\",\n  \"password\": \"123456\"\n}"
             }
           }
         },
         {
-          "name": "Listar Géneros",
-          "request": {
-            "method": "GET",
-            "url": {
-              "raw": "{{base_url}}/api/generos/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "generos",
-                ""
-              ]
-            },
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
+          "name": "Login (JWT) - POST /api/auth/login/ (save tokens)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let jsonData = {};",
+                  "try { jsonData = pm.response.json(); } catch (e) {}",
+                  "",
+                  "if (jsonData.access) {",
+                  "  pm.collectionVariables.set('accessToken', jsonData.access);",
+                  "  pm.environment.set('accessToken', jsonData.access);",
+                  "}",
+                  "",
+                  "if (jsonData.refresh) {",
+                  "  pm.collectionVariables.set('refreshToken', jsonData.refresh);",
+                  "  pm.environment.set('refreshToken', jsonData.refresh);",
+                  "}",
+                  "",
+                  "pm.test('Token access recibido', function () {",
+                  "  pm.expect(jsonData.access).to.be.a('string');",
+                  "});"
+                ]
               }
-            ]
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/api/auth/login/", "host": ["{{baseUrl}}"], "path": ["api", "auth", "login", ""] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"admin\"\n}"
+            }
           }
         },
         {
-          "name": "Buscar Género por nombre",
+          "name": "Refresh (JWT) - POST /api/auth/refresh/ (save access)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let jsonData = {};",
+                  "try { jsonData = pm.response.json(); } catch (e) {}",
+                  "if (jsonData.access) pm.collectionVariables.set('accessToken', jsonData.access);",
+                  "pm.test('Token access refrescado', function () { pm.expect(jsonData.access).to.be.a('string'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/api/auth/refresh/", "host": ["{{baseUrl}}"], "path": ["api", "auth", "refresh", ""] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refresh\": \"{{refreshToken}}\"\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Generos",
+      "item": [
+        {
+          "name": "Listar Géneros (Public) - GET /api/generos/",
           "request": {
             "method": "GET",
-            "url": {
-              "raw": "{{base_url}}/api/generos/?search=Terror",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "generos",
-                ""
-              ],
-              "query": [
-                {
-                  "key": "search",
-                  "value": "Terror"
-                }
-              ]
-            },
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              }
-            ]
+            "url": { "raw": "{{baseUrl}}/api/generos/", "host": ["{{baseUrl}}"], "path": ["api", "generos", ""] }
           }
         },
         {
-          "name": "Ver Género",
+          "name": "Buscar Género por nombre - GET /api/generos/?search=",
           "request": {
             "method": "GET",
             "url": {
-              "raw": "{{base_url}}/api/generos/1/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "generos",
-                "1",
-                ""
-              ]
-            },
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              }
-            ]
+              "raw": "{{baseUrl}}/api/generos/?search=Terror",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "generos", ""],
+              "query": [{ "key": "search", "value": "Terror" }]
+            }
           }
         },
         {
-          "name": "Actualizar Género",
+          "name": "Crear Género (Admin) - POST /api/generos/ (save generoId)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let jsonData = {};",
+                  "try { jsonData = pm.response.json(); } catch (e) {}",
+                  "if (jsonData.id) pm.collectionVariables.set('generoId', jsonData.id);",
+                  "pm.test('Se creó género', function () { pm.expect(jsonData.id).to.be.a('number'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": { "raw": "{{baseUrl}}/api/generos/", "host": ["{{baseUrl}}"], "path": ["api", "generos", ""] },
+            "body": { "mode": "raw", "raw": "{\n  \"nombre\": \"Terror\"\n}" }
+          }
+        },
+        {
+          "name": "Ver Género - GET /api/generos/:id/",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/generos/{{generoId}}/",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "generos", "{{generoId}}", ""]
+            }
+          }
+        },
+        {
+          "name": "Actualizar Género (Admin) - PUT /api/generos/:id/",
           "request": {
             "method": "PUT",
-            "url": {
-              "raw": "{{base_url}}/api/generos/1/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "generos",
-                "1",
-                ""
-              ]
-            },
             "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              }
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
             ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"nombre\": \"Suspenso\"\n}"
+            "url": {
+              "raw": "{{baseUrl}}/api/generos/{{generoId}}/",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "generos", "{{generoId}}", ""]
+            },
+            "body": { "mode": "raw", "raw": "{\n  \"nombre\": \"Suspenso\"\n}" }
+          }
+        },
+        {
+          "name": "Eliminar Género (Admin) - DELETE /api/generos/:id/",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/generos/{{generoId}}/",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "generos", "{{generoId}}", ""]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Películas",
+      "item": [
+        {
+          "name": "Listar Películas (Public) - GET /api/peliculas/",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/peliculas/", "host": ["{{baseUrl}}"], "path": ["api", "peliculas", ""] }
+          }
+        },
+        {
+          "name": "Filtrar por género - GET /api/peliculas/?genero=",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/peliculas/?genero=1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "peliculas", ""],
+              "query": [{ "key": "genero", "value": "1" }]
             }
           }
         },
         {
-          "name": "Eliminar Género (sin películas)",
+          "name": "Filtrar en cartelera - GET /api/peliculas/?en_cartelera=true",
           "request": {
-            "method": "DELETE",
+            "method": "GET",
             "url": {
-              "raw": "{{base_url}}/api/generos/1/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "generos",
-                "1",
-                ""
-              ]
-            },
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              }
-            ]
+              "raw": "{{baseUrl}}/api/peliculas/?en_cartelera=true",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "peliculas", ""],
+              "query": [{ "key": "en_cartelera", "value": "true" }]
+            }
           }
         },
         {
-          "name": "Eliminar Género (con películas - debe fallar)",
+          "name": "Buscar por título o código - GET /api/peliculas/?search=",
           "request": {
-            "method": "DELETE",
+            "method": "GET",
             "url": {
-              "raw": "{{base_url}}/api/generos/1/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "generos",
-                "1",
-                ""
-              ]
-            },
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              }
-            ]
+              "raw": "{{baseUrl}}/api/peliculas/?search=Inception",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "peliculas", ""],
+              "query": [{ "key": "search", "value": "Inception" }]
+            }
           }
         },
         {
-          "name": "Crear Película",
+          "name": "Ordenar por duración - GET /api/peliculas/?ordering=duracion_minutos",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/peliculas/?ordering=duracion_minutos",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "peliculas", ""],
+              "query": [{ "key": "ordering", "value": "duracion_minutos" }]
+            }
+          }
+        },
+        {
+          "name": "Crear Película (Admin) - POST /api/peliculas/ (save peliculaId)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "let jsonData = {};",
+                  "try { jsonData = pm.response.json(); } catch (e) {}",
+                  "if (jsonData.id) pm.collectionVariables.set('peliculaId', jsonData.id);",
+                  "pm.test('Se creó película', function () { pm.expect(jsonData.id).to.be.a('number'); });"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "POST",
-            "url": {
-              "raw": "{{base_url}}/api/peliculas/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "peliculas",
-                ""
-              ]
-            },
             "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              }
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
             ],
+            "url": { "raw": "{{baseUrl}}/api/peliculas/", "host": ["{{baseUrl}}"], "path": ["api", "peliculas", ""] },
             "body": {
               "mode": "raw",
               "raw": "{\n  \"titulo\": \"El Conjuro\",\n  \"codigo\": \"PEL001\",\n  \"duracion_minutos\": 112,\n  \"precio_entrada\": 8.50,\n  \"en_cartelera\": true,\n  \"genero\": 1\n}"
@@ -227,181 +270,29 @@
           }
         },
         {
-          "name": "Listar Películas",
+          "name": "Ver Película - GET /api/peliculas/:id/",
           "request": {
             "method": "GET",
             "url": {
-              "raw": "{{base_url}}/api/peliculas/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "peliculas",
-                ""
-              ]
+              "raw": "{{baseUrl}}/api/peliculas/{{peliculaId}}/",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "peliculas", "{{peliculaId}}", ""]
             }
           }
         },
         {
-          "name": "Filtrar Películas por género",
-          "request": {
-            "method": "GET",
-            "url": {
-              "raw": "{{base_url}}/api/peliculas/?genero=1",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "peliculas",
-                ""
-              ],
-              "query": [
-                {
-                  "key": "genero",
-                  "value": "1"
-                }
-              ]
-            }
-          }
-        },
-        {
-          "name": "Filtrar Películas en cartelera",
-          "request": {
-            "method": "GET",
-            "url": {
-              "raw": "{{base_url}}/api/peliculas/?en_cartelera=true",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "peliculas",
-                ""
-              ],
-              "query": [
-                {
-                  "key": "en_cartelera",
-                  "value": "true"
-                }
-              ]
-            }
-          }
-        },
-        {
-          "name": "Buscar Película por título",
-          "request": {
-            "method": "GET",
-            "url": {
-              "raw": "{{base_url}}/api/peliculas/?search=Conjuro",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "peliculas",
-                ""
-              ],
-              "query": [
-                {
-                  "key": "search",
-                  "value": "Conjuro"
-                }
-              ]
-            }
-          }
-        },
-        {
-          "name": "Buscar Película por código",
-          "request": {
-            "method": "GET",
-            "url": {
-              "raw": "{{base_url}}/api/peliculas/?search=PEL001",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "peliculas",
-                ""
-              ],
-              "query": [
-                {
-                  "key": "search",
-                  "value": "PEL001"
-                }
-              ]
-            }
-          }
-        },
-        {
-          "name": "Ordenar Películas por duración",
-          "request": {
-            "method": "GET",
-            "url": {
-              "raw": "{{base_url}}/api/peliculas/?ordering=duracion_minutos",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "peliculas",
-                ""
-              ],
-              "query": [
-                {
-                  "key": "ordering",
-                  "value": "duracion_minutos"
-                }
-              ]
-            }
-          }
-        },
-        {
-          "name": "Ver Película",
-          "request": {
-            "method": "GET",
-            "url": {
-              "raw": "{{base_url}}/api/peliculas/1/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "peliculas",
-                "1",
-                ""
-              ]
-            }
-          }
-        },
-        {
-          "name": "Actualizar Película",
+          "name": "Actualizar Película (Admin) - PUT /api/peliculas/:id/",
           "request": {
             "method": "PUT",
-            "url": {
-              "raw": "{{base_url}}/api/peliculas/1/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "peliculas",
-                "1",
-                ""
-              ]
-            },
             "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              }
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
             ],
+            "url": {
+              "raw": "{{baseUrl}}/api/peliculas/{{peliculaId}}/",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "peliculas", "{{peliculaId}}", ""]
+            },
             "body": {
               "mode": "raw",
               "raw": "{\n  \"titulo\": \"El Conjuro 2\",\n  \"codigo\": \"PEL001\",\n  \"duracion_minutos\": 120,\n  \"precio_entrada\": 9.00,\n  \"en_cartelera\": true,\n  \"genero\": 1\n}"
@@ -409,27 +300,15 @@
           }
         },
         {
-          "name": "Eliminar Película",
+          "name": "Eliminar Película (Admin) - DELETE /api/peliculas/:id/",
           "request": {
             "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
             "url": {
-              "raw": "{{base_url}}/api/peliculas/1/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "peliculas",
-                "1",
-                ""
-              ]
-            },
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              }
-            ]
+              "raw": "{{baseUrl}}/api/peliculas/{{peliculaId}}/",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "peliculas", "{{peliculaId}}", ""]
+            }
           }
         }
       ]
@@ -438,27 +317,11 @@
       "name": "Ejercicio 2 - Calcular Entradas",
       "item": [
         {
-          "name": "Calcular Entradas (todos los tipos)",
+          "name": "Calcular Entradas (todos los tipos) - POST /api/cine/entradas/",
           "request": {
             "method": "POST",
-            "url": {
-              "raw": "{{base_url}}/api/cine/entradas/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "cine",
-                "entradas",
-                ""
-              ]
-            },
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/api/cine/entradas/", "host": ["{{baseUrl}}"], "path": ["api", "cine", "entradas", ""] },
             "body": {
               "mode": "raw",
               "raw": "{\n  \"entradas\": [\n    {\n      \"precio_base\": 10.00,\n      \"tipo_cliente\": \"GENERAL\"\n    },\n    {\n      \"precio_base\": 10.00,\n      \"tipo_cliente\": \"ESTUDIANTE\"\n    },\n    {\n      \"precio_base\": 10.00,\n      \"tipo_cliente\": \"TERCERA_EDAD\"\n    }\n  ]\n}"
@@ -466,27 +329,11 @@
           }
         },
         {
-          "name": "Calcular Entradas (solo ESTUDIANTE)",
+          "name": "Calcular Entradas (solo ESTUDIANTE) - POST /api/cine/entradas/",
           "request": {
             "method": "POST",
-            "url": {
-              "raw": "{{base_url}}/api/cine/entradas/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "cine",
-                "entradas",
-                ""
-              ]
-            },
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/api/cine/entradas/", "host": ["{{baseUrl}}"], "path": ["api", "cine", "entradas", ""] },
             "body": {
               "mode": "raw",
               "raw": "{\n  \"entradas\": [\n    {\n      \"precio_base\": 15.50,\n      \"tipo_cliente\": \"ESTUDIANTE\"\n    },\n    {\n      \"precio_base\": 15.50,\n      \"tipo_cliente\": \"ESTUDIANTE\"\n    }\n  ]\n}"
@@ -494,27 +341,11 @@
           }
         },
         {
-          "name": "Calcular Entradas (error: tipo inválido)",
+          "name": "Calcular Entradas (error: tipo inválido) - POST /api/cine/entradas/",
           "request": {
             "method": "POST",
-            "url": {
-              "raw": "{{base_url}}/api/cine/entradas/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "cine",
-                "entradas",
-                ""
-              ]
-            },
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/api/cine/entradas/", "host": ["{{baseUrl}}"], "path": ["api", "cine", "entradas", ""] },
             "body": {
               "mode": "raw",
               "raw": "{\n  \"entradas\": [\n    {\n      \"precio_base\": 10.00,\n      \"tipo_cliente\": \"VIP\"\n    }\n  ]\n}"
@@ -527,130 +358,66 @@
       "name": "Ejercicio 3 - Programar Sala",
       "item": [
         {
-          "name": "Programar Sala (10 asientos, 5,3,2,4)",
+          "name": "Programar Sala (10 asientos, 5,3,2,4) - GET /api/cine/sala/",
           "request": {
             "method": "GET",
             "url": {
-              "raw": "{{base_url}}/api/cine/sala/?asientos_disponibles=10&discapacidades=5,3,2,4",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "cine",
-                "sala",
-                ""
-              ],
+              "raw": "{{baseUrl}}/api/cine/sala/?asientos_disponibles=10&discapacidades=5,3,2,4",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "cine", "sala", ""],
               "query": [
-                {
-                  "key": "asientos_disponibles",
-                  "value": "10"
-                },
-                {
-                  "key": "discapacidades",
-                  "value": "5,3,2,4"
-                }
+                { "key": "asientos_disponibles", "value": "10" },
+                { "key": "discapacidades", "value": "5,3,2,4" }
               ]
             }
           }
         },
         {
-          "name": "Programar Sala (caben todas)",
+          "name": "Programar Sala (caben todas) - GET /api/cine/sala/",
           "request": {
             "method": "GET",
             "url": {
-              "raw": "{{base_url}}/api/cine/sala/?asientos_disponibles=15&discapacidades=3,4,5",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "cine",
-                "sala",
-                ""
-              ],
+              "raw": "{{baseUrl}}/api/cine/sala/?asientos_disponibles=15&discapacidades=3,4,5",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "cine", "sala", ""],
               "query": [
-                {
-                  "key": "asientos_disponibles",
-                  "value": "15"
-                },
-                {
-                  "key": "discapacidades",
-                  "value": "3,4,5"
-                }
+                { "key": "asientos_disponibles", "value": "15" },
+                { "key": "discapacidades", "value": "3,4,5" }
               ]
             }
           }
         },
         {
-          "name": "Programar Sala (no cabe ninguna)",
+          "name": "Programar Sala (no cabe ninguna) - GET /api/cine/sala/",
           "request": {
             "method": "GET",
             "url": {
-              "raw": "{{base_url}}/api/cine/sala/?asientos_disponibles=2&discapacidades=5,3",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "cine",
-                "sala",
-                ""
-              ],
+              "raw": "{{baseUrl}}/api/cine/sala/?asientos_disponibles=2&discapacidades=5,3",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "cine", "sala", ""],
               "query": [
-                {
-                  "key": "asientos_disponibles",
-                  "value": "2"
-                },
-                {
-                  "key": "discapacidades",
-                  "value": "5,3"
-                }
+                { "key": "asientos_disponibles", "value": "2" },
+                { "key": "discapacidades", "value": "5,3" }
               ]
             }
           }
         },
         {
-          "name": "Programar Sala (error: sin discapacidades)",
+          "name": "Programar Sala (error: sin discapacidades) - GET /api/cine/sala/",
           "request": {
             "method": "GET",
             "url": {
-              "raw": "{{base_url}}/api/cine/sala/?asientos_disponibles=10&discapacidades=",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "cine",
-                "sala",
-                ""
-              ],
+              "raw": "{{baseUrl}}/api/cine/sala/?asientos_disponibles=10&discapacidades=",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "cine", "sala", ""],
               "query": [
-                {
-                  "key": "asientos_disponibles",
-                  "value": "10"
-                },
-                {
-                  "key": "discapacidades",
-                  "value": ""
-                }
+                { "key": "asientos_disponibles", "value": "10" },
+                { "key": "discapacidades", "value": "" }
               ]
             }
           }
         }
       ]
-    }
-  ],
-  "variable": [
-    {
-      "key": "base_url",
-      "value": "http://127.0.0.1:8000",
-      "type": "string"
-    },
-    {
-      "key": "token",
-      "value": "",
-      "type": "string"
     }
   ]
 }
